@@ -155,18 +155,17 @@ func TestBinomial(t *testing.T) {
 		n int
 	}{
 		{0.5, 100},
-		{0.05, 10},
 		{0.05, 1},
 		{1, 1000},
 		{0.3, 3000},
-		{0.3, 250},
+		{0.3, 2500},
 		{0.0, 250},
 	}
 
 	for _, c := range cases {
-		got := float64(Binomial(c.p, c.n))
+		got, _ := Binomial(c.p, c.n)
 		wantPositive, wantNegative := calculateMenWithError(c.p, c.n)
-		if got < wantNegative || got > wantPositive {
+		if float64(got) < wantNegative || float64(got) > wantPositive {
 			t.Errorf("Binomail(%v, %d) should be in interval [%v - %v] but got: %v",
 				c.p, c.n, wantNegative, wantPositive, got)
 		}
@@ -174,39 +173,29 @@ func TestBinomial(t *testing.T) {
 }
 
 func TestBinomial_WithProbabilityGreaterThanOne(t *testing.T) {
-	defer func() {
-		if recover() == nil {
-			t.Error("Expected panic with invalid probability.")
-		}
-	}()
-	Binomial(1.2, 10)
+	_, err := Binomial(1.2, 10)
+	if err == nil {
+		t.Error("Expected error with invalid probability.")
+	}
 }
 
 func TestBinomial_WithProbabilityLessThanZero(t *testing.T) {
-	defer func() {
-		if recover() == nil {
-			t.Error("Expected panic with invalid probability.")
-		}
-	}()
-	Binomial(-1.2, 10)
+	if _, err := Binomial(-1.2, 10); err == nil {
+		t.Error("Expected panic with invalid probability.")
+	}
 }
 
 func TestBinomial_WithNLessThanZero(t *testing.T) {
-	defer func() {
-		if recover() == nil {
-			t.Error("Expected panic with invalid parameter.")
-		}
-	}()
-	Binomial(1, -10)
+	if _, err := Binomial(1, -10); err == nil {
+		t.Error("Expected panic with invalid parameter.")
+	}
 }
 
 func TestBinomial_WithNEqualZero(t *testing.T) {
-	defer func() {
-		if recover() == nil {
-			t.Error("Expected panic with invalid parameter.")
-		}
-	}()
-	Binomial(1, 0)
+	_, err := Binomial(1, 0)
+	if err == nil {
+		t.Error("Expected error with invalid parameter.")
+	}
 }
 
 func calculateMenWithError(p float64, n int) (float64, float64) {
@@ -219,7 +208,8 @@ func calculateMenWithError(p float64, n int) (float64, float64) {
 func mean(p float64, n int) float64 {
 	var sum int64
 	for i := 1; i <= n; i++ {
-		sum += Binomial(p, n)
+		binomial, _ := Binomial(p, n)
+		sum += binomial
 	}
-	return float64(sum / int64(n))
+	return float64(sum) / float64(n)
 }

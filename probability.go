@@ -1,6 +1,7 @@
 package probability
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"math/rand"
@@ -68,15 +69,15 @@ func BernoulliTrial(p float64) (result int64) {
 	return
 }
 
-func Binomial(p float64, n int) (result int64) {
+func Binomial(p float64, n int) (result int64, err error) {
 	if !(0.0 <= p && p <= 1.0) {
-		panic(fmt.Sprintf("Invalid probability p: %f", p))
+		return -1, errors.New(fmt.Sprintf("Invalid probability p: %f", p))
 	}
 	if n <= 0 {
-		panic(fmt.Sprintf("Invalid parameter n: %d", n))
+		return -1, errors.New(fmt.Sprintf("Invalid parameter n: %d", n))
 	}
 	for i := 1; i <= n; i++ {
 		result += BernoulliTrial(p)
 	}
-	return
+	return result, nil
 }
